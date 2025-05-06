@@ -1,481 +1,3 @@
-# # prompt_builder.py
-# """
-# Build prompts for the LLM
-# """
-# import logging
-
-# from src.config import SYSTEM_PROMPT
-
-# logger = logging.getLogger(__name__)
-
-# class PromptBuilder:
-#     """Build prompts for the LLM"""
-    
-#     def __init__(self):
-#         self.system_prompt = SYSTEM_PROMPT
-        
-#     def build_chat_prompt(self, user_query, context_chunks):
-#         """Build a prompt for the chat interaction with context from RAG"""
-#         logger.info(f"Building chat prompt with {len(context_chunks)} context chunks")
-        
-#         # Format context chunks as a string
-#         context_parts = []
-#         for i, chunk in enumerate(context_chunks):
-#             source_info = f"[{i+1}] Source: {chunk['url']}"
-#             if 'domain' in chunk:
-#                 source_info += f" (Domain: {chunk['domain']})"
-            
-#             context_parts.append(f"{source_info}\nContent: {chunk['chunk_text']}")
-            
-#         context = "\n\n".join(context_parts)
-        
-#         # Build the full prompt following Qwen3 format
-#         prompt = f"""<|im_start|>system
-# {self.system_prompt}
-
-# I have access to the following information from your browsing history:
-
-# {context}
-# <|im_end|>
-
-# <|im_start|>user
-# {user_query}
-# <|im_end|>
-
-# <|im_start|>assistant
-# """
-        
-#         return prompt
-        
-#     def build_summary_prompt(self, history_data, period="recent"):
-#         """Build a prompt for generating browsing history summaries"""
-#         logger.info(f"Building summary prompt for {period} history")
-        
-#         # Format history data as a string
-#         history_items = []
-#         for item in history_data:
-#             history_items.append(
-#                 f"- URL: {item['url']}\n"
-#                 f"  Title: {item['title'] or 'Untitled'}\n"
-#                 f"  Visited: {item['last_visit_time']}"
-#             )
-            
-#         history_text = "\n".join(history_items)
-        
-#         prompt = f"""<|im_start|>system
-# {self.system_prompt}
-
-# I need you to analyze and summarize the following {period} browsing history:
-
-# {history_text}
-# <|im_end|>
-
-# <|im_start|>user
-# Please give me a summary of my recent browsing activity. What topics have I been focusing on? Are there any patterns or trends you notice?
-# <|im_end|>
-
-# <|im_start|>assistant
-# """
-        
-#         return prompt
-        
-#     def build_domain_analysis_prompt(self, domain, history_data):
-#         """Build a prompt for analyzing browsing activity on a specific domain"""
-#         logger.info(f"Building domain analysis prompt for {domain}")
-        
-#         # Filter for the specified domain
-#         domain_items = [item for item in history_data if item.get('domain') == domain]
-        
-#         # Format domain data
-#         domain_items_text = []
-#         for item in domain_items:
-#             domain_items_text.append(
-#                 f"- URL: {item['url']}\n"
-#                 f"  Title: {item['title'] or 'Untitled'}\n"
-#                 f"  Visited: {item['last_visit_time']}"
-#             )
-            
-#         history_text = "\n".join(domain_items_text)
-        
-#         prompt = f"""<|im_start|>system
-# {self.system_prompt}
-
-# I need you to analyze my browsing activity on {domain}:
-
-# {history_text}
-# <|im_end|>
-
-# <|im_start|>user
-# What have I been looking at on {domain}? What topics or patterns do you notice in my browsing on this site?
-# <|im_end|>
-
-# <|im_start|>assistant
-# """
-        
-#         return prompt
-
-
-# """
-# Build prompts for the LLM with enhanced context handling
-# """
-# import logging
-# from datetime import datetime
-
-# from src.config import SYSTEM_PROMPT
-
-# logger = logging.getLogger(__name__)
-
-# class PromptBuilder:
-#     """Build prompts for the LLM with improved context handling"""
-    
-#     def __init__(self):
-#         self.system_prompt = SYSTEM_PROMPT
-        
-#     def build_chat_prompt(self, user_query, context_chunks):
-#         """Build a prompt for the chat interaction with context from RAG"""
-#         logger.info(f"Building chat prompt with {len(context_chunks)} context chunks")
-        
-#         # Extract time frame information if present
-#         time_frame = self._extract_time_frame(user_query)
-#         time_description = self._get_time_description(time_frame)
-        
-#         # Determine if this is an activity summary type query
-#         is_activity_query = self._is_activity_query(user_query)
-        
-#         # Format context chunks as a string with enhanced metadata
-#         context_parts = []
-#         for i, chunk in enumerate(context_chunks):
-#             # Build source info with enhanced metadata
-#             source_info = f"[{i+1}] Source: {chunk.get('title', 'Untitled')} - {chunk.get('url', 'No URL')}"
-            
-#             # Add domain info if available
-#             if 'domain' in chunk:
-#                 source_info += f" (Domain: {chunk['domain']})"
-            
-#             # Add time context if available
-#             if 'last_visit_time' in chunk and chunk['last_visit_time']:
-#                 try:
-#                     visit_time = datetime.fromisoformat(chunk['last_visit_time'])
-#                     days_ago = (datetime.now() - visit_time).days
-                    
-#                     if days_ago == 0:
-#                         source_info += " (Visited today)"
-#                     elif days_ago == 1:
-#                         source_info += " (Visited yesterday)"
-#                     else:
-#                         source_info += f" (Visited {days_ago} days ago)"
-#                 except (ValueError, TypeError):
-#                     pass
-            
-#             # Add visit frequency if available
-#             if 'visit_count' in chunk and chunk['visit_count'] > 1:
-#                 source_info += f" (Visited {chunk['visit_count']} times)"
-            
-#             # Add relevance notes if available
-#             if 'relevance_notes' in chunk and chunk['relevance_notes']:
-#                 notes = '; '.join(chunk['relevance_notes'])
-#                 source_info += f"\nRelevance: {notes}"
-            
-#             # Add the chunk content
-#             content = chunk.get('chunk_text', 'No content available')
-#             context_parts.append(f"{source_info}\nContent: {content}")
-        
-#         # Join all context parts
-#         context = "\n\n".join(context_parts)
-        
-#         # Build additional instructions based on query type
-#         additional_instructions = ""
-#         if is_activity_query:
-#             additional_instructions = f"""
-# You are analyzing the user's browsing history {time_description}. 
-# Focus on identifying topics, patterns, and interests from their browsing activity.
-# Organize your response by topics or themes, and mention specific websites or content 
-# they've shown interest in. Be specific about time periods when relevant.
-# """
-        
-#         # Build the full prompt following Qwen3 format
-#         prompt = f"""<|im_start|>system
-# {self.system_prompt}
-
-# {additional_instructions}
-# I have access to the following information from your browsing history:
-
-# {context}
-# <|im_end|>
-
-# <|im_start|>user
-# {user_query}
-# <|im_end|>
-
-# <|im_start|>assistant
-# """
-        
-#         return prompt
-        
-#     def build_summary_prompt(self, history_data, period="recent"):
-#         """Build a prompt for generating browsing history summaries"""
-#         logger.info(f"Building summary prompt for {period} history")
-        
-#         # Group history data by domain for better analysis
-#         domains = {}
-#         for item in history_data:
-#             domain = item.get('domain', 'unknown')
-#             if domain not in domains:
-#                 domains[domain] = []
-#             domains[domain].append(item)
-        
-#         # Format domains and their entries
-#         domain_sections = []
-#         for domain, items in domains.items():
-#             if not items:
-#                 continue
-                
-#             domain_items = []
-#             for item in items:
-#                 domain_items.append(
-#                     f"  - Title: {item.get('title', 'Untitled')}\n"
-#                     f"    URL: {item.get('url', 'No URL')}\n"
-#                     f"    Visited: {item.get('last_visit_time', 'Unknown')}"
-#                 )
-            
-#             domain_section = f"Domain: {domain} ({len(items)} pages)\n" + "\n".join(domain_items)
-#             domain_sections.append(domain_section)
-            
-#         history_text = "\n\n".join(domain_sections)
-        
-#         # Build specific instructions based on the period
-#         period_instructions = ""
-#         if period == "today":
-#             period_instructions = "Focus on today's browsing patterns and interests."
-#         elif period == "this week":
-#             period_instructions = "Analyze the past week's browsing activity to identify trends and interests."
-#         elif period == "this month":
-#             period_instructions = "Provide a monthly overview highlighting major themes and changes in browsing habits."
-        
-#         prompt = f"""<|im_start|>system
-# {self.system_prompt}
-
-# I need you to analyze and summarize the following {period} browsing history.
-# {period_instructions}
-# Organize your analysis by topics or themes rather than by websites.
-# Focus on identifying patterns, interests, and trends.
-
-# Here is the browsing history data organized by domain:
-
-# {history_text}
-# <|im_end|>
-
-# <|im_start|>user
-# Please give me a summary of my {period} browsing activity. What topics have I been focusing on? Are there any patterns or trends you notice?
-# <|im_end|>
-
-# <|im_start|>assistant
-# """
-        
-#         return prompt
-        
-#     def build_domain_analysis_prompt(self, domain, history_data):
-#         """Build a prompt for analyzing browsing activity on a specific domain"""
-#         logger.info(f"Building domain analysis prompt for {domain}")
-        
-#         # Filter for the specified domain
-#         domain_items = [item for item in history_data if item.get('domain') == domain]
-        
-#         # Find the time span
-#         dates = []
-#         for item in domain_items:
-#             if 'last_visit_time' in item and item['last_visit_time']:
-#                 try:
-#                     dates.append(datetime.fromisoformat(item['last_visit_time']))
-#                 except (ValueError, TypeError):
-#                     pass
-                    
-#         time_span = ""
-#         if len(dates) >= 2:
-#             earliest = min(dates)
-#             latest = max(dates)
-#             days_span = (latest - earliest).days
-            
-#             if days_span == 0:
-#                 time_span = "today"
-#             elif days_span <= 7:
-#                 time_span = f"in the past {days_span} days"
-#             elif days_span <= 30:
-#                 time_span = f"in the past month"
-#             else:
-#                 time_span = f"over the past {days_span} days"
-        
-#         # Format domain data
-#         domain_items_text = []
-#         for item in domain_items:
-#             domain_items_text.append(
-#                 f"- Title: {item.get('title', 'Untitled')}\n"
-#                 f"  URL: {item.get('url', 'No URL')}\n"
-#                 f"  Visited: {item.get('last_visit_time', 'Unknown')}"
-#             )
-            
-#         history_text = "\n".join(domain_items_text)
-        
-#         prompt = f"""<|im_start|>system
-# {self.system_prompt}
-
-# I need you to analyze my browsing activity on {domain} {time_span}.
-# Focus on identifying specific topics, content types, and interests I've shown on this domain.
-# Be specific about patterns you notice in the content I've viewed.
-
-# Here is my browsing history on {domain}:
-
-# {history_text}
-# <|im_end|>
-
-# <|im_start|>user
-# What have I been looking at on {domain}? What topics or patterns do you notice in my browsing on this site?
-# <|im_end|>
-
-# <|im_start|>assistant
-# """
-        
-#         return prompt
-        
-#     def build_comparative_prompt(self, user_query, context_chunks, time_period=None):
-#         """Build a prompt for comparative analysis of browsing behavior over time"""
-#         logger.info(f"Building comparative prompt with {len(context_chunks)} context chunks")
-        
-#         # Group content by time periods
-#         time_groups = self._group_by_time_periods(context_chunks)
-        
-#         # Format each time period's content
-#         time_period_sections = []
-#         for period, chunks in time_groups.items():
-#             if not chunks:
-#                 continue
-                
-#             section_items = []
-#             for chunk in chunks:
-#                 section_items.append(
-#                     f"- {chunk.get('title', 'Untitled')} ({chunk.get('domain', 'Unknown domain')})"
-#                 )
-                
-#             section = f"Period: {period} ({len(chunks)} pages)\n" + "\n".join(section_items)
-#             time_period_sections.append(section)
-            
-#         context = "\n\n".join(time_period_sections)
-        
-#         prompt = f"""<|im_start|>system
-# {self.system_prompt}
-
-# I need you to compare my browsing behavior across different time periods.
-# Identify changes in interests, topics, and browsing patterns over time.
-# Focus on meaningful shifts rather than listing all visited sites.
-
-# Here is my browsing history grouped by time period:
-
-# {context}
-# <|im_end|>
-
-# <|im_start|>user
-# {user_query}
-# <|im_end|>
-
-# <|im_start|>assistant
-# """
-        
-#         return prompt
-    
-#     def _extract_time_frame(self, query):
-#         """Extract time frame from query (in days)"""
-#         query_lower = query.lower()
-        
-#         # Check for time references
-#         time_refs = {
-#             'today': 1,
-#             'yesterday': 2,
-#             'this week': 7,
-#             'past week': 7,
-#             'this month': 30,
-#             'recent': 14,
-#             'recently': 14,
-#             'last week': 14,
-#             'past few days': 5
-#         }
-        
-#         for ref, days in time_refs.items():
-#             if ref in query_lower:
-#                 return days
-                
-#         return None
-    
-#     def _get_time_description(self, days):
-#         """Convert days to a natural language description"""
-#         if not days:
-#             return "recently"
-            
-#         if days == 1:
-#             return "today"
-#         elif days == 2:
-#             return "yesterday and today"
-#         elif days <= 7:
-#             return "this week"
-#         elif days <= 14:
-#             return "in the past two weeks"
-#         elif days <= 30:
-#             return "this month"
-#         else:
-#             return f"in the past {days} days"
-    
-#     def _is_activity_query(self, query):
-#         """Check if this is an activity summary query"""
-#         query_lower = query.lower()
-        
-#         activity_terms = [
-#             'what have i', 'been doing', 'looked at', 'searched for',
-#             'browsing history', 'activity', 'visited', 'browsed',
-#             'been reading', 'been researching', 'been interested in',
-#             'topics', 'summary', 'overview'
-#         ]
-        
-#         return any(term in query_lower for term in activity_terms)
-    
-#     def _group_by_time_periods(self, chunks):
-#         """Group chunks by time periods for comparative analysis"""
-#         today = []
-#         this_week = []
-#         this_month = []
-#         earlier = []
-        
-#         now = datetime.now()
-        
-#         for chunk in chunks:
-#             if 'last_visit_time' not in chunk or not chunk['last_visit_time']:
-#                 earlier.append(chunk)
-#                 continue
-                
-#             try:
-#                 visit_time = datetime.fromisoformat(chunk['last_visit_time'])
-#                 days_ago = (now - visit_time).days
-                
-#                 if days_ago == 0:
-#                     today.append(chunk)
-#                 elif days_ago <= 7:
-#                     this_week.append(chunk)
-#                 elif days_ago <= 30:
-#                     this_month.append(chunk)
-#                 else:
-#                     earlier.append(chunk)
-#             except (ValueError, TypeError):
-#                 earlier.append(chunk)
-        
-#         return {
-#             'Today': today,
-#             'This Week (excluding today)': this_week,
-#             'This Month (excluding this week)': this_month,
-#             'Earlier': earlier
-#         }
-
-
-
-
-
 # src/llm/prompt_builder.py
 """
 Build prompts for the LLM
@@ -609,4 +131,117 @@ class PromptBuilder:
             "<|im_end|>\n\n"
             "<|im_start|>assistant\n"
         )
+        return prompt
+
+
+    # Add these methods to your prompt_builder.py file
+
+    def build_period_summary_prompt(self, start_date, end_date, history_data):
+        """Build a prompt for generating a summary of browsing activity for a time period"""
+        total_items = len(history_data)
+        unique_domains = len(set([item.get('domain', '') for item in history_data]))
+        
+        prompt = f"""Analyze the user's browsing history from {start_date} to {end_date}. 
+    There are {total_items} browsing history entries across {unique_domains} unique domains.
+
+    Create a concise summary (3-4 paragraphs) that highlights:
+    1. Major themes and topics in their browsing
+    2. Most frequently visited domains and what this indicates about their interests
+    3. Any patterns in browsing behavior (time of day, specific topics, etc.)
+    4. Interesting insights about what they might have been researching or working on
+
+    Focus on providing valuable observations that help the user understand their digital activities during this time period.
+
+    Browse History Data:
+    """
+        
+        # Add a sample of history data (limit to ~50 entries if very large)
+        sample_size = min(50, len(history_data))
+        sample = history_data[:sample_size]
+        
+        for item in sample:
+            prompt += f"- {item.get('last_visit_time', '')}: {item.get('title', '')} ({item.get('domain', '')})\n"
+        
+        # Add instruction to keep response concise
+        prompt += "\nProvide your analysis in a concise, informative format. Focus on meaningful patterns and insights."
+        
+        return prompt
+
+    def build_period_analysis_prompt(self, start_date, end_date, history_data):
+        """Build a prompt for generating a detailed analysis of browsing activity for a time period"""
+        total_items = len(history_data)
+        
+        # Calculate domain frequencies
+        domain_counts = {}
+        for item in history_data:
+            domain = item.get('domain', '')
+            if domain:
+                domain_counts[domain] = domain_counts.get(domain, 0) + 1
+        
+        # Sort domains by frequency
+        sorted_domains = sorted(domain_counts.items(), key=lambda x: x[1], reverse=True)
+        top_domains = sorted_domains[:10]
+        
+        domain_summary = "\n".join([f"- {domain}: {count} visits" for domain, count in top_domains])
+        
+        prompt = f"""Generate a detailed analysis of the user's browsing history from {start_date} to {end_date}.
+    This analysis will help them understand their online activity during this period.
+
+    BROWSING OVERVIEW:
+    - Time period: {start_date} to {end_date}
+    - Total pages visited: {total_items}
+    - Top domains visited:
+    {domain_summary}
+
+    Please provide a comprehensive analysis that includes:
+
+    1. MAJOR THEMES AND TOPICS:
+    Identify the main topics and themes in their browsing history. What were they researching or interested in?
+
+    2. BROWSING PATTERNS:
+    Analyze patterns in their browsing behavior, such as:
+    - Types of content consumed (articles, videos, social media, etc.)
+    - Time-based patterns (specific days or times they were most active)
+    - Topical trends and how interests evolved during this period
+
+    3. DOMAIN ANALYSIS:
+    Provide insights about their most visited domains and what this indicates about their interests or work.
+
+    4. KEY INSIGHTS:
+    Offer 3-5 specific insights that might be valuable or surprising to the user.
+
+    5. SUMMARY:
+    Conclude with a brief paragraph that captures the essence of their online activity during this period.
+
+    Base your analysis on this browsing history data:
+    """
+        
+        # Add history data (limit to ~100 entries if very large)
+        sample_size = min(100, len(history_data))
+        sample = history_data[:sample_size]
+        
+        for item in sample:
+            prompt += f"- {item.get('last_visit_time', '')}: {item.get('title', '')} ({item.get('domain', '')})\n"
+        
+        prompt += "\nProvide your detailed analysis in a well-structured, easily readable format."
+        
+        return prompt
+
+    def build_date_chat_prompt(self, date, query, history_data):
+        """Build a prompt for chatting about browsing activity on a specific date"""
+        prompt = f"""You are an AI assistant helping the user understand their browsing history on {date}. 
+    The user has asked: "{query}"
+
+    Please respond to their question based on their browsing activity from this date. 
+    If the question isn't directly related to their browsing history, try to connect it to what they were doing online that day.
+
+    Here is their browsing history from {date}:
+    """
+        
+        # Add the history data
+        for item in history_data:
+            prompt += f"- {item.get('last_visit_time', '')}: {item.get('title', '')} ({item.get('domain', '')})\n"
+        
+        prompt += "\nRespond to their question in a helpful, conversational way, focusing on their browsing data from this date."
+        
         return prompt

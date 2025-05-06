@@ -20,6 +20,13 @@
                     Search
                 </a>
             </li>
+            <!-- New Calendar Link -->
+            <li class="nav-item">
+                <a class="nav-link {% if request.path == '/calendar' %}active{% endif %}" href="/calendar">
+                    <i class="bi bi-calendar-week me-2"></i>
+                    Calendar
+                </a>
+            </li>
             <li class="nav-item">
                 <a class="nav-link {% if request.path == '/domains' %}active{% endif %}" href="/domains">
                     <i class="bi bi-globe me-2"></i>

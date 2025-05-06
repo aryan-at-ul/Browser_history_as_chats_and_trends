@@ -1,0 +1,177 @@
+/* static/css/calendar.css */
+/* Calendar Styles */
+.fc-day-today {
+    background-color: rgba(66, 135, 245, 0.1) !important;
+}
+
+.fc-daygrid-day.high-activity {
+    background-color: rgba(211, 47, 47, 0.1) !important;
+}
+
+.fc-daygrid-day.medium-activity {
+    background-color: rgba(255, 152, 0, 0.1) !important;
+}
+
+.fc-daygrid-day.low-activity {
+    background-color: rgba(76, 175, 80, 0.1) !important;
+}
+
+.fc-event {
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+
+.calendar-tooltip {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    z-index: 100;
+    display: none;
+}
+
+.fc-event:hover .calendar-tooltip {
+    display: block;
+}
+
+.tooltip-close {
+    position: absolute;
+    top: 2px;
+    right: 5px;
+    cursor: pointer;
+}
+
+/* Activity Panel Styles */
+.summary-box {
+    background-color: #f5f5f5;
+    padding: 1rem;
+    border-radius: 4px;
+    border-left: 4px solid #2196f3;
+}
+
+.stat-card {
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    border: 1px solid #dee2e6;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #2196f3;
+}
+
+.visit-item {
+    border-left: 3px solid #e0e0e0;
+    padding-left: 10px;
+}
+
+.visit-item:hover {
+    border-left-color: #2196f3;
+    background-color: #f5f5f5;
+}
+
+.daily-chart {
+    margin-top: 10px;
+}
+
+.chart-bar {
+    width: 100%;
+    border-radius: 2px;
+    transition: height 0.3s ease;
+}
+
+.chart-bar-container:hover .chart-bar {
+    background-color: #1976d2 !important;
+}
+
+.chart-label {
+    text-align: center;
+    margin-top: 5px;
+    font-size: 0.7rem;
+}
+
+/* Chat Styles */
+#chat-messages {
+    height: 300px;
+    overflow-y: auto;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: #f8f9fa;
+}
+
+.chat-message {
+    max-width: 85%;
+    margin-bottom: 10px;
+}
+
+.user-message {
+    margin-left: auto;
+}
+
+.user-message .message-content {
+    background-color: #2196f3;
+    color: white;
+    border-radius: 15px 15px 0 15px;
+}
+
+.assistant-message {
+    margin-right: auto;
+}
+
+.assistant-message .message-content {
+    background-color: #e9ecef;
+    color: #212529;
+    border-radius: 15px 15px 15px 0;
+}
+
+.system-message {
+    margin: 0 auto;
+    text-align: center;
+}
+
+.system-message .message-content {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    border: 1px solid #dee2e6;
+    border-radius: 15px;
+    display: inline-block;
+}
+
+/* Analysis Content Formatting */
+.analysis-content h1, 
+.analysis-content h2, 
+.analysis-content h3 {
+    font-size: 1.2rem;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.analysis-content h4, 
+.analysis-content h5, 
+.analysis-content h6 {
+    font-size: 1rem;
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+}
+
+.analysis-content ul, 
+.analysis-content ol {
+    padding-left: 1.5rem;
+}
+
+.analysis-content p {
+    margin-bottom: 0.75rem;
+}
+
+/* Notification container */
+.notification-container {
+    z-index: 9999;
+    max-width: 300px;
+}

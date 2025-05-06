@@ -559,12 +559,410 @@ def debug_database():
             'traceback': traceback.format_exc()
         }), 500
 
+
+
+# Add these routes to your api/routes.py file
+# Add these routes to your api/routes.py file
+
+@api.route('/calendar/overview', methods=['GET'])
+def get_calendar_overview():
+    """Get calendar data overview with activity counts by date"""
+    try:
+        # Get parameters - default to last 3 months
+        start_date = request.args.get('start', None)
+        end_date = request.args.get('end', None)
+        
+        # Get calendar data from the database
+        conn = sqlite3.connect(DB_PATH)
+        cursor = conn.cursor()
+        
+        # Build query based on provided date range
+        query = """
+            SELECT 
+                DATE(last_visit_time) as visit_date,
+                COUNT(*) as visit_count,
+                COUNT(DISTINCT domain) as domain_count
+            FROM history 
+        """
+        
+        params = []
+        if start_date or end_date:
+            query += " WHERE "
+            
+            if start_date:
+                query += "DATE(last_visit_time) >= ?"
+                params.append(start_date)
+                
+                if end_date:
+                    query += " AND "
+            
+            if end_date:
+                query += "DATE(last_visit_time) <= ?"
+                params.append(end_date)
+        
+        query += """
+            GROUP BY DATE(last_visit_time)
+            ORDER BY DATE(last_visit_time)
+        """
+        
+        # Execute the query
+        if params:
+            cursor.execute(query, params)
+        else:
+            cursor.execute(query)
+            
+        # Format the results
+        calendar_data = []
+        for row in cursor.fetchall():
+            calendar_data.append({
+                'date': row[0],
+                'visit_count': row[1],
+                'domain_count': row[2]
+            })
+            
+        # Get the date range for the calendar
+        cursor.execute("SELECT MIN(DATE(last_visit_time)), MAX(DATE(last_visit_time)) FROM history")
+        date_range = cursor.fetchone()
+        
+        return jsonify({
+            'status': 'success',
+            'date_range': {
+                'start': date_range[0] if date_range[0] else None,
+                'end': date_range[1] if date_range[1] else None
+            },
+            'calendar_data': calendar_data
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting calendar data: {e}")
+        import traceback
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'traceback': traceback.format_exc()
+        }), 500
+
+@api.route('/calendar/date/<date>', methods=['GET'])
+def get_date_activity(date):
+    """Get browsing activity for a specific date"""
+    try:
+        # Validate date format (YYYY-MM-DD)
+        try:
+            import datetime
+            datetime.datetime.strptime(date, '%Y-%m-%d')
+        except ValueError:
+            return jsonify({
+                'status': 'error',
+                'message': 'Invalid date format. Please use YYYY-MM-DD'
+            }), 400
+        
+        # Get history for the specified date
+        conn = sqlite3.connect(DB_PATH)
+        
+        # Get domain stats for the date
+        domain_query = """
+            SELECT domain, COUNT(*) as visit_count
+            FROM history
+            WHERE DATE(last_visit_time) = ?
+            GROUP BY domain
+            ORDER BY visit_count DESC
+            LIMIT 10
+        """
+        domain_df = pd.read_sql_query(domain_query, conn, params=(date,))
+        
+        # Get all visits for the date
+        visits_query = """
+            SELECT id, url, title, visit_count, last_visit_time, domain
+            FROM history
+            WHERE DATE(last_visit_time) = ?
+            ORDER BY last_visit_time
+        """
+        visits_df = pd.read_sql_query(visits_query, conn, params=(date,))
+        
+        # Format the results
+        if visits_df.empty:
+            return jsonify({
+                'status': 'error',
+                'message': f'No browsing history found for date: {date}'
+            }), 404
+            
+        domain_stats = domain_df.to_dict(orient='records')
+        visits = visits_df.to_dict(orient='records')
+        
+        # Generate a summary
+        total_visits = len(visits)
+        total_domains = len(domain_stats)
+        top_domains = [d['domain'] for d in domain_stats[:3]] if domain_stats else []
+        
+        summary = f"On {date}, you visited {total_visits} pages across {total_domains} domains. "
+        if top_domains:
+            summary += f"Most visited: {', '.join(top_domains)}."
+        
+        return jsonify({
+            'status': 'success',
+            'date': date,
+            'summary': summary,
+            'domain_stats': domain_stats,
+            'visits': visits,
+            'total_visits': total_visits,
+            'total_domains': total_domains
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting date activity: {e}")
+        import traceback
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'traceback': traceback.format_exc()
+        }), 500
+
+@api.route('/calendar/period', methods=['GET'])
+def get_period_activity():
+    """Get browsing activity for a specific time period"""
+    try:
+        # Get parameters
+        start_date = request.args.get('start', None)
+        end_date = request.args.get('end', None)
+        period_type = request.args.get('type', 'custom')  # day, week, month, custom
+        
+        if not start_date and not end_date and period_type == 'custom':
+            return jsonify({
+                'status': 'error',
+                'message': 'Either a date range or period type is required'
+            }), 400
+            
+        # Calculate date range based on period type
+        import datetime
+        today = datetime.datetime.now().date()
+        
+        if period_type == 'day':
+            # Default to today if not specified
+            if not start_date:
+                start_date = today.strftime('%Y-%m-%d')
+            end_date = start_date
+        elif period_type == 'week':
+            # Current week (Monday to Sunday)
+            if not start_date:
+                start = today - datetime.timedelta(days=today.weekday())
+                end = start + datetime.timedelta(days=6)
+                start_date = start.strftime('%Y-%m-%d')
+                end_date = end.strftime('%Y-%m-%d')
+        elif period_type == 'month':
+            # Current month
+            if not start_date:
+                start = datetime.date(today.year, today.month, 1)
+                # Calculate last day of month
+                if today.month == 12:
+                    end = datetime.date(today.year + 1, 1, 1) - datetime.timedelta(days=1)
+                else:
+                    end = datetime.date(today.year, today.month + 1, 1) - datetime.timedelta(days=1)
+                start_date = start.strftime('%Y-%m-%d')
+                end_date = end.strftime('%Y-%m-%d')
+        
+        # Validate date formats
+        try:
+            if start_date:
+                datetime.datetime.strptime(start_date, '%Y-%m-%d')
+            if end_date:
+                datetime.datetime.strptime(end_date, '%Y-%m-%d')
+        except ValueError:
+            return jsonify({
+                'status': 'error',
+                'message': 'Invalid date format. Please use YYYY-MM-DD'
+            }), 400
+        
+        # Build query conditions
+        conditions = []
+        params = []
+        
+        if start_date:
+            conditions.append("DATE(last_visit_time) >= ?")
+            params.append(start_date)
+        
+        if end_date:
+            conditions.append("DATE(last_visit_time) <= ?")
+            params.append(end_date)
+            
+        where_clause = " WHERE " + " AND ".join(conditions) if conditions else ""
+        
+        # Get history data
+        conn = sqlite3.connect(DB_PATH)
+        
+        # Get domain stats for the period
+        domain_query = f"""
+            SELECT domain, COUNT(*) as visit_count, 
+                   COUNT(DISTINCT DATE(last_visit_time)) as days_count
+            FROM history
+            {where_clause}
+            GROUP BY domain
+            ORDER BY visit_count DESC
+            LIMIT 15
+        """
+        domain_df = pd.read_sql_query(domain_query, conn, params=params)
+        
+        # Get daily activity summary
+        daily_query = f"""
+            SELECT DATE(last_visit_time) as date, 
+                   COUNT(*) as visit_count,
+                   COUNT(DISTINCT domain) as domain_count
+            FROM history
+            {where_clause}
+            GROUP BY DATE(last_visit_time)
+            ORDER BY date
+        """
+        daily_df = pd.read_sql_query(daily_query, conn, params=params)
+        
+        # Get visits summary
+        summary_query = f"""
+            SELECT COUNT(*) as total_visits,
+                   COUNT(DISTINCT DATE(last_visit_time)) as total_days,
+                   COUNT(DISTINCT domain) as total_domains
+            FROM history
+            {where_clause}
+        """
+        summary_df = pd.read_sql_query(summary_query, conn, params=params)
+        
+        # Format the results
+        if summary_df.iloc[0]['total_visits'] == 0:
+            return jsonify({
+                'status': 'error',
+                'message': f'No browsing history found for the selected period'
+            }), 404
+            
+        domain_stats = domain_df.to_dict(orient='records')
+        daily_activity = daily_df.to_dict(orient='records')
+        
+        # Extract summary statistics
+        total_visits = summary_df.iloc[0]['total_visits']
+        total_days = summary_df.iloc[0]['total_days']
+        total_domains = summary_df.iloc[0]['total_domains']
+        
+        # Generate a summary
+        period_desc = ""
+        if period_type == 'day':
+            period_desc = f"On {start_date}"
+        elif period_type == 'week':
+            period_desc = f"During the week of {start_date} to {end_date}"
+        elif period_type == 'month':
+            period_desc = f"During the month from {start_date} to {end_date}"
+        else:
+            period_desc = f"From {start_date} to {end_date}"
+            
+        summary = f"{period_desc}, you visited {total_visits} pages across {total_domains} domains over {total_days} days. "
+        
+        top_domains = [d['domain'] for d in domain_stats[:3]] if domain_stats else []
+        if top_domains:
+            summary += f"Most visited: {', '.join(top_domains)}."
+        
+        return jsonify({
+            'status': 'success',
+            'period': {
+                'start_date': start_date,
+                'end_date': end_date,
+                'type': period_type
+            },
+            'summary': summary,
+            'stats': {
+                'total_visits': int(total_visits),
+                'total_days': int(total_days),
+                'total_domains': int(total_domains),
+                'avg_visits_per_day': round(total_visits / total_days, 1) if total_days > 0 else 0
+            },
+            'domain_stats': domain_stats,
+            'daily_activity': daily_activity
+        })
+        
+    except Exception as e:
+        logger.error(f"Error getting period activity: {e}")
+        import traceback
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'traceback': traceback.format_exc()
+        }), 500
+
+@api.route('/calendar/analyze', methods=['POST'])
+def analyze_calendar_period():
+    """Generate a detailed analysis of browsing activity for a time period"""
+    try:
+        data = request.json
+        start_date = data.get('start_date')
+        end_date = data.get('end_date')
+        analysis_type = data.get('type', 'summary')  # summary, detailed
+        
+        if not start_date or not end_date:
+            return jsonify({
+                'status': 'error',
+                'message': 'Both start_date and end_date are required'
+            }), 400
+            
+        # Get history data
+        conn = sqlite3.connect(DB_PATH)
+        
+        # Build query
+        query = """
+            SELECT h.id, h.url, h.title, h.visit_count, h.last_visit_time, h.domain
+            FROM history h
+            WHERE DATE(h.last_visit_time) BETWEEN ? AND ?
+            ORDER BY h.last_visit_time
+        """
+        
+        df = pd.read_sql_query(query, conn, params=(start_date, end_date))
+        
+        if df.empty:
+            return jsonify({
+                'status': 'error',
+                'message': f'No browsing history found for the selected period'
+            }), 404
+            
+        # Convert to format for prompt builder
+        history_data = df.to_dict(orient='records')
+        
+        # Build prompt
+        prompt_builder = PromptBuilder()
+        
+        if analysis_type == 'detailed':
+            prompt = prompt_builder.build_period_analysis_prompt(start_date, end_date, history_data)
+        else:
+            prompt = prompt_builder.build_period_summary_prompt(start_date, end_date, history_data)
+        
+        # Generate analysis
+        generator = ResponseGenerator()
+        analysis = generator.generate_response(prompt)
+        
+        # Get some basic stats for context
+        total_visits = len(history_data)
+        unique_domains = df['domain'].nunique()
+        
+        return jsonify({
+            'status': 'success',
+            'period': {
+                'start_date': start_date,
+                'end_date': end_date
+            },
+            'analysis': analysis,
+            'stats': {
+                'total_visits': total_visits,
+                'unique_domains': unique_domains
+            }
+        })
+        
+    except Exception as e:
+        logger.error(f"Error analyzing calendar period: {e}")
+        import traceback
+        return jsonify({
+            'status': 'error',
+            'message': str(e),
+            'traceback': traceback.format_exc()
+        }), 500
+
+
+
+
+
+
 @api.route("/health", methods=["GET"])
 def health():
     return {"status": "ok"}, 200
 
-# Add a route outside of the blueprint in app.py for direct access
-# Add this to app.py:
-# @app.route('/debug/database')
-# def app_debug_database():
-#     return api.debug_database()
