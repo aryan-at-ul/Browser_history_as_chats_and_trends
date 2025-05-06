@@ -22,7 +22,7 @@ The system extracts data from browser history databases, processes content from 
 ## Research Applications
 
 It helps if you are foregetful and need to recall somethings you need to look up, date wise, you can also chat and get summary of what you did (a lot more improvement needed, but it gets the job done)
-![Dashboard Screenshot](docs/images/calendar.png)
+![Calendar Screenshot](docs/images/calendar.png)
 
 
 
@@ -98,6 +98,12 @@ python serve.py --process --index
 4. **Calendar**: Visualize activity patterns and analyze time periods
 5. **Domains**: Explore activity by website
 6. **Statistics**: View detailed browsing metrics
+
+The chats are processed through Qwen 4b model, you can query on the entire database or on dashboard it can summarize based on top activities.
+
+![Chat Screenshot](docs/images/full_chat_query.png)
+![Quick Chat Screenshot](docs/images/quick_chat_filtered.png)
+
 
 <!-- ## Architecture -->
 
