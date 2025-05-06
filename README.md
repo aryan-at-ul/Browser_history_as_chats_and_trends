@@ -126,12 +126,12 @@ The application consists of several components:
 - [ ] **Advanced Visualization**: Add more interactive data visualizations
 - [ ] **Export Functionality**: Add ability to export analyses and reports
 
-### Future Research Directions
+<!-- ### Future Research Directions
 
 - Temporal pattern analysis in information seeking behavior
 - Cross-domain knowledge graph construction
 - Attention and focus metrics for productivity research
-- Longitudinal behavioral analytics
+- Longitudinal behavioral analytics -->
 
 ## Contributing
 
