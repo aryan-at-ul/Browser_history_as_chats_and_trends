@@ -28,9 +28,9 @@ It helps if you are foregetful and need to recall somethings you need to look up
 
 This tool is designed for researchers in various fields:
 
-- **Digital Behavior Analysis**: Study patterns in information seeking and consumption
+<!-- - **Digital Behavior Analysis**: Study patterns in information seeking and consumption -->
 - **Personal Knowledge Management**: Analyze how information is collected and revisited
-- **Human-Computer Interaction**: Understand browsing habits and attention patterns
+<!-- - **Human-Computer Interaction**: Understand browsing habits and attention patterns -->
 - **Privacy Research**: Explore the types of data available in browsing histories
 - **Productivity Analysis**: Identify time spent on different digital activities
 
