@@ -21,6 +21,11 @@ The system extracts data from browser history databases, processes content from 
 
 ## Research Applications
 
+It helps if you are foregetful and need to recall somethings you need to look up, date wise, you can also chat and get summary of what you did (a lot more improvement needed, but it gets the job done)
+![Dashboard Screenshot](docs/images/calendar.png)
+
+
+
 This tool is designed for researchers in various fields:
 
 - **Digital Behavior Analysis**: Study patterns in information seeking and consumption
@@ -94,9 +99,9 @@ python serve.py --process --index
 5. **Domains**: Explore activity by website
 6. **Statistics**: View detailed browsing metrics
 
-## Architecture
+<!-- ## Architecture -->
 
-![Architecture Diagram](docs/images/architecture.png)
+<!-- ![Architecture Diagram](docs/images/architecture.png) -->
 
 The application consists of several components:
 
@@ -117,11 +122,9 @@ The application consists of several components:
 - [ ] **Code Quality Improvements**: Implement Pylint, Poetry, Black
 - [ ] **Documentation Enhancements**: Expand API documentation
 - [ ] **Testing Suite**: Add comprehensive unit and integration tests
-- [ ] **Multi-browser Support**: Enhance support for Firefox, Safari, Edge
-- [ ] **Performance Optimizations**: Optimize database and vector search operations
+- [ ] **Performance Optimizations**: Optimize database and vector search operations 
 - [ ] **Advanced Visualization**: Add more interactive data visualizations
 - [ ] **Export Functionality**: Add ability to export analyses and reports
-- [ ] **User Authentication**: Add multi-user support with authentication
 
 ### Future Research Directions
 
