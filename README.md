@@ -155,4 +155,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-*Note: This tool is designed for research purposes and personal use. Be mindful of privacy implications when analyzing browsing history data.*
+*Note: This tool is designed for research purposes and personal use. It run on local, NO API CALL (GPU needed!!).*
