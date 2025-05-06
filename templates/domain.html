@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Domain: {{ domain }}</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshDomainBtn">Refresh</button>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Domain Analysis</h5>
+                <div id="domain-analysis">
+                    <p class="text-center text-muted">Loading analysis...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Visit History</h5>
+                <div class="chart-container" style="position: relative; height:250px;">
+                    <canvas id="domainHistoryChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Pages Visited</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Title</th>
+                                <th>URL</th>
+                                <th>Visits</th>
+                                <th>Last Visit</th>
+                            </tr>
+                        </thead>
+                        <tbody id="domain-pages-table">
+                            <tr>
+                                <td colspan="4" class="text-center">Loading pages...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Ask about {{ domain }}</h5>
+                <div class="input-group mb-3">
+                    <input type="text" class="form-control" id="domain-query-input" placeholder="Ask something about your activity on {{ domain }}...">
+                    <button class="btn btn-primary" id="domain-query-btn">Ask</button>
+                </div>
+                <div id="domain-query-response" class="d-none">
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <p id="domain-response-text">Loading response...</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    const domainName = "{{ domain }}";
+</script>
+<script src="{{ url_for('static', filename='js/domain.js') }}"></script>
+{% endblock %}

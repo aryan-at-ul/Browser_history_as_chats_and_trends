@@ -1,0 +1,63 @@
+<!-- HTML Template -->
+{% extends "base.html" %}
+
+{% block styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Chat with Your History</h1>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div id="chat-container" class="mb-3">
+                    <div class="chat-message system-message">
+                        <p>Hello! I'm your browsing history assistant. You can ask me questions about your browsing activity, and I'll help you analyze and understand it.</p>
+                    </div>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="chat-input" class="form-control" placeholder="Ask something about your browsing history...">
+                    <button class="btn btn-primary" id="chat-send-btn">Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Example Questions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="example-question" data-question="What have I been researching lately?">
+                            What have I been researching lately?
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="example-question" data-question="Can you summarize my activity on github.com?">
+                            Can you summarize my activity on github.com?
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="example-question" data-question="What topics have I been most interested in this week?">
+                            What topics have I been most interested in this week?
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Domains</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshDomainsBtn">Refresh</button>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="chart-container" style="position: relative; height:400px;">
+                    <canvas id="domainsPieChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Top Domains</h5>
+                <div class="table-responsive">
+                    <table class="table table-striped">
+                        <thead>
+                            <tr>
+                                <th>Domain</th>
+                                <th>Pages Visited</th>
+                                <th>Total Visits</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="domains-table-body">
+                            {% if domains %}
+                                {% for domain in domains %}
+                                <tr>
+                                    <td>{{ domain.domain }}</td>
+                                    <td>{{ domain.count }}</td>
+                                    <td>{{ domain.total_visits }}</td>
+                                    <td>
+                                        <a href="/domain/{{ domain.domain }}" class="btn btn-sm btn-outline-primary">Details</a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center">No domain data available</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/domains.js') }}"></script>
+{% endblock %}

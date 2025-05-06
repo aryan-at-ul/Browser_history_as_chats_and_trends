@@ -1,0 +1,95 @@
+# YAML Configuration
+
+# Application configuration
+app:
+  name: Browsing History RAG
+  host: 127.0.0.1
+  port: 5000
+  debug: true
+  secret_key: your-secret-key
+
+# Database settings
+database:
+  path: data/history.db
+  
+# Chrome history settings
+chrome:
+  history_db_path: ${HOME}/.config/google-chrome/Default/History
+  last_timestamp_file: data/last_timestamp.txt
+  
+# Excluded domains (won't be scraped)
+excluded_domains:
+  - mail.google.com
+  - outlook.office.com
+  - teams.microsoft.com
+  - drive.google.com
+  - docs.google.com
+  - calendar.google.com
+  - github.com/settings
+  - amazon.com/your-account
+  - netflix.com/account
+  - youtube.com/feed
+  - stackoverflow.com
+  - facebook.com
+  - twitter.com
+  - instagram.com
+  - linkedin.com
+  - quora.com
+  - chatgpt.com
+  - openai.com
+  - claude.ai
+  - towardsdatascience.com
+  - 127.0.0.1
+  
+  
+# Scraping settings
+scraping:
+  delay: 1.0
+  timeout: 10
+  user_agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36
+  max_retries: 3
+  content_dir: scraped_content
+  use_selenium: true
+  
+# Indexing settings
+indexing:
+  chunk_size: 512
+  chunk_overlap: 128
+  embedding_model: all-MiniLM-L6-v2
+  embedding_dim: 384
+  
+# LLM settings
+llm:
+  model_name: Qwen/Qwen3-4B
+  cache_dir: models/llm
+  max_seq_length: 4096
+  max_new_tokens: 512
+  temperature: 0.7
+  top_p: 0.95
+  lora_r: 16
+  lora_alpha: 16
+  max_context_chunks: 5
+  cache_responses: true
+  # use_cache: true
+  
+# RAG settings
+rag:
+  system_prompt: |
+    You are an AI assistant that helps users analyze their web browsing history.
+    Your task is to provide insightful answers based on the user's browsing history context.
+    When answering questions, use only the provided context from their browsing history.
+    If the answer cannot be found in the context, politely indicate this.
+    Always cite the sources you use in your answers by mentioning the website title or URL.
+    Keep your answers concise and to the point.
+  
+# Search settings
+search:
+  results_count: 20
+  rerank_model: cross-encoder/ms-marco-MiniLM-L-6-v2
+  use_reranking: true
+  
+# Scheduler settings
+scheduler:
+  extract_interval: 60  # minutes
+  scrape_interval: 120  # minutes
+  index_interval: 240   # minutes

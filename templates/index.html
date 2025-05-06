@@ -1,0 +1,86 @@
+<!-- HTML Template -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Dashboard</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary" id="refreshDashboardBtn">Refresh</button>
+        </div>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Activity Summary</h5>
+                <div id="activity-summary">
+                    <p class="text-center text-muted">Loading summary...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Top Domains</h5>
+                <div class="chart-container" style="position: relative; height:250px;">
+                    <canvas id="domainsChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">Activity by Hour</h5>
+                <div class="chart-container" style="position: relative; height:250px;">
+                    <canvas id="hourlyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Recent Activity</h5>
+                <div id="recent-activity">
+                    <p class="text-center text-muted">Loading recent activity...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Quick Chat</h5>
+                <div class="mb-3">
+                    <input type="text" class="form-control" id="quickChatInput" placeholder="Ask something about your browsing history...">
+                </div>
+                <div id="quick-chat-response" class="d-none">
+                    <div class="card bg-light mb-3">
+                        <div class="card-body">
+                            <p id="quick-chat-text">Loading response...</p>
+                            <div id="quick-chat-sources" class="small text-muted"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}
